@@ -15,10 +15,13 @@ public class Movement : MonoBehaviour {
 	private float zDir;
 	private bool inputValid;
 	private Camera cam;
-
+	private GameObject hand;
+	private float totalRotation;
+	private float deltaRotation;
 	// Use this for initialization
 	void Start () {
 
+		hand = GameObject.FindGameObjectWithTag ("hand");
 		cam = GetComponentInChildren<Camera> ();
 		audSour = GetComponentInChildren<AudioSource> ();
 		charCont = GameObject.FindGameObjectWithTag ("Player").GetComponent<CharacterController>();
@@ -26,6 +29,8 @@ public class Movement : MonoBehaviour {
 		zDir = 0.0f;
 		currentMove = Vector3.zero;
 		inputValid = true;
+		totalRotation = 0.0f;
+		deltaRotation = 0.0f;
 
 	}
 	
@@ -40,10 +45,11 @@ public class Movement : MonoBehaviour {
 
 	void getInput() {
 
-
+		//Get changes in x and z
 		xDir = Input.GetAxis ("Horizontal");
 		zDir = Input.GetAxis ("Vertical");
 
+		//if the player is pushing on the left stick play walking sound
 		if (xDir == 0.0f && zDir == 0.0f) {
 			audSour.enabled = false;
 		} else {
@@ -58,9 +64,16 @@ public class Movement : MonoBehaviour {
 
 		//rotate
 		transform.Rotate (new Vector3 (0.0f, Input.GetAxis ("RightHorizontal")*lookSpeed*Time.deltaTime, 0.0f));
-		cam.transform.Rotate (new Vector3 (Input.GetAxis ("RightVertical") * lookSpeed * Time.deltaTime, 0.0f, 0.0f));
 
-		Debug.Log (cam.transform.localRotation);
+		//Get the change in rotation and then check if accepting this change will be inside/outside the allowed viewing angle by allowing only so much total change to happen from the rest position
+		deltaRotation = Input.GetAxis ("RightVertical") * lookSpeed * Time.deltaTime;
+
+		if (((deltaRotation + totalRotation) < maxAngle) && ((deltaRotation + totalRotation) > minAngle)) {
+			totalRotation += deltaRotation;
+			cam.transform.Rotate (new Vector3 (Input.GetAxis ("RightVertical") * lookSpeed * Time.deltaTime, 0.0f, 0.0f));
+
+		}
+
 	}
 
 	bool getInputValid() {
