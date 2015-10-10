@@ -84,5 +84,5 @@ public class Movement : MonoBehaviour {
 	void setInputValid(bool inState){
 		this.inputValid = inState;
 	}
-	
+
 }
